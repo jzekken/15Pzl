@@ -1,16 +1,40 @@
+﻿using System.Diagnostics;
+
 namespace PrelimApp
 {
     public partial class Form1 : Form
     {
         int count;
+        Stopwatch timer = new Stopwatch();
+        System.Windows.Forms.Timer gameTimer = new System.Windows.Forms.Timer();
+        TimeSpan elapsedTime;
+        bool hardMode = false;
+        bool firstMove = false;
         public Form1()
         {
             InitializeComponent();
+            label1.Text = "00:00:00";
+            gameTimer.Interval = 1000;
+            gameTimer.Tick += GameTimer_Tick;
         }
+        private void GameTimer_Tick(object sender, EventArgs e)
+        {
+            elapsedTime = timer.Elapsed;
+            label1.Text = string.Format("{0:00}:{1:00}:{2:00}", elapsedTime.Hours, elapsedTime.Minutes, elapsedTime.Seconds);
+        }
+
         public void spotter(Button bt1, Button bt2)
         {
             if (bt2.Text == "")
             {
+                if (!timer.IsRunning)
+                {
+                    timer.Start();
+                    gameTimer.Start();
+                    firstMove = true;
+                    if (hardMode) HideNumbers();
+                }
+
                 bt2.Text = bt1.Text;
                 bt1.Text = "";
             }
@@ -22,11 +46,14 @@ namespace PrelimApp
                 button11.Text == "11" && button12.Text == "12" && button13.Text == "13" && button14.Text == "14" &&
                 button15.Text == "15" && button16.Text == "")
             {
-                MessageBox.Show("Well done, Player 1", "Shuffle Game", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                timer.Stop();
+                gameTimer.Stop();
+                MessageBox.Show($"🎉 Well done, Player 1! 🎉\n\n🕒 Time Elapsed: {label1.Text}\n🔢 Moves Made: {count}",
+                    "15 Puzzle", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            count = count + 1;
+            count++;
             textBox1.Text = "Moves: " + count;
-            textBox1.Text = count.ToString();
+
         }
 
         public void shuffle()
@@ -77,11 +104,53 @@ namespace PrelimApp
             button15.Text = Convert.ToString(bnum[15]);
             button16.Text = "";
 
+            firstMove = false;
+
+            if (hardMode) ShowNumbers();
+        }
+        private void ShowNumbers()
+        {
+            button1.Text = "1";
+            button2.Text = "2";
+            button3.Text = "3";
+            button4.Text = "4";
+            button5.Text = "5";
+            button6.Text = "6";
+            button7.Text = "7";
+            button8.Text = "8";
+            button9.Text = "9";
+            button10.Text = "10";
+            button11.Text = "11";
+            button12.Text = "12";
+            button13.Text = "13";
+            button14.Text = "14";
+            button15.Text = "15";
+            button16.Text = "";
+        }
+
+
+        private void HideNumbers()
+        {
+            button1.Text = button1.Text == "" ? "" : " ";
+            button2.Text = button2.Text == "" ? "" : " ";
+            button3.Text = button3.Text == "" ? "" : " ";
+            button4.Text = button4.Text == "" ? "" : " ";
+            button5.Text = button5.Text == "" ? "" : " ";
+            button6.Text = button6.Text == "" ? "" : " ";
+            button7.Text = button7.Text == "" ? "" : " ";
+            button8.Text = button8.Text == "" ? "" : " ";
+            button9.Text = button9.Text == "" ? "" : " ";
+            button10.Text = button10.Text == "" ? "" : " ";
+            button11.Text = button11.Text == "" ? "" : " ";
+            button12.Text = button12.Text == "" ? "" : " ";
+            button13.Text = button13.Text == "" ? "" : " ";
+            button14.Text = button14.Text == "" ? "" : " ";
+            button15.Text = button15.Text == "" ? "" : " ";
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            DialogResult iExit = MessageBox.Show("Confirm if you want to exit", "Shuffle Games", MessageBoxButtons.YesNo,
+            DialogResult iExit = MessageBox.Show("Confirm if you want to exit", "15 Puzzle", MessageBoxButtons.YesNo,
                 MessageBoxIcon.Information);
 
             if (iExit == DialogResult.No)
@@ -92,7 +161,7 @@ namespace PrelimApp
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            DialogResult iExit = MessageBox.Show("Confirm if you want to exit", "Shuffle Games", MessageBoxButtons.YesNo,
+            DialogResult iExit = MessageBox.Show("Confirm if you want to exit", "15 Puzzle", MessageBoxButtons.YesNo,
                MessageBoxIcon.Information);
 
             if (iExit == DialogResult.Yes)
@@ -256,19 +325,100 @@ namespace PrelimApp
 
         private void resetToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            shuffle();
+
+            DialogResult YesOrNo = MessageBox.Show("Are you sure you want to reset?", "15 Puzzle", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (YesOrNo == DialogResult.Yes)
+            {
+                shuffle();
+                timer.Reset();
+                gameTimer.Stop();
+                label1.Text = "00:00:00";
+                count = 0;
+                textBox1.Text = "Moves: " + count;
+                firstMove = false;
+            }
         }
 
         private void newGameToolStripMenuItem_Click(object sender, EventArgs e)
         {
             shuffle();
-            textBox1.Clear();
+            timer.Reset();
+            gameTimer.Stop();
+            label1.Text = "00:00:00";
+            textBox1.Text = "Moves: 0";
+            count = 0;
+            firstMove = false;
 
-            this.Refresh();
-            this.Hide();
-            Form1 form1 = new Form1();
-            form1.Show();
+        }
 
+        private void easyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            hardMode = false;
+            shuffle();
+            timer.Reset();
+            gameTimer.Stop();
+            label1.Text = "00:00:00";
+            textBox1.Text = "Moves: 0";
+            count = 0;
+            firstMove = false;
+        }
+
+        private void hardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            hardMode = true;
+            shuffle();
+            timer.Reset();
+            gameTimer.Stop();
+            label1.Text = "00:00:00";
+            textBox1.Text = "Moves: 0";
+            count = 0;
+            firstMove = false;
+        }
+
+        private void pauseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (timer.IsRunning)
+            {
+                timer.Stop();
+                gameTimer.Stop();
+                MessageBox.Show("Game Paused", "Pause", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void pauseToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (timer.IsRunning)
+            {
+                timer.Stop();
+                gameTimer.Stop();
+                MessageBox.Show("Game Paused", "Pause", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void resetToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            DialogResult YesOrNo = MessageBox.Show("Are you sure you want to reset?", "15 Puzzle", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (YesOrNo == DialogResult.Yes)
+            {
+                shuffle();
+                timer.Reset();
+                gameTimer.Stop();
+                label1.Text = "00:00:00";
+                count = 0;
+                textBox1.Text = "Moves: " + count;
+                firstMove = false;
+            }
+        }
+
+        private void exitToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            DialogResult iExit = MessageBox.Show("Confirm if you want to exit", "15 Puzzle", MessageBoxButtons.YesNo,
+              MessageBoxIcon.Information);
+
+            if (iExit == DialogResult.Yes)
+            {
+                Application.ExitThread();
+            }
         }
     }
 }
